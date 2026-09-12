@@ -2,9 +2,10 @@ resources:
   pipelines:
     lakeflow_declarative_pipelines:
       name: streaming_lakeflow_declarative_pipelines
-      # TODO: src/streaming/common/config.pyのCATALOGと合わせる
-      catalog: TODO_catalog
-      target: ${bundle.target}
+      # src/streaming/common/config.py の CATALOG / SCHEMA_LDP と合わせる
+      catalog: tech_survey
+      # Jobs方式のbronze/silver/goldと書き込み先が衝突しないよう、LDP専用スキーマに出力する
+      schema: ldp
       serverless: true
       libraries:
         - notebook:
