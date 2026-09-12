@@ -20,12 +20,12 @@
 
 # COMMAND ----------
 
-import sys
 import os
+import sys
 
 sys.path.append(os.path.abspath("../.."))
 
-from streaming.common.config import VOLUME_CHECKPOINT_PATH  # noqa: E402
+from streaming.common.config import VOLUME_CHECKPOINT_PATH
 
 # COMMAND ----------
 

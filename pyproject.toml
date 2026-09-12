@@ -8,8 +8,31 @@ dependencies = [
     "databricks-connect>=19.1",
     "databricks-sdk>=0.138.0",
     "python-dotenv>=1.2.3",
+    "ipykernel>=1.4.3",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.16.7",
 ]
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.ruff]
+line-length = 100
+
+# Databricksノートブックの実行時に自動で注入される変数 - 未定義エラー (F821) を避ける
+builtins = ["spark", "dbutils", "display", "sc", "sqlContext"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "RUF"]
+
+# 日本語のコメント/docstringが「紛らわしいUnicode文字」として大量に誤検知されるため除外する
+ignore = ["RUF001", "RUF002", "RUF003"]
+
+[tool.ruff.lint.per-file-ignores]
+# ノートブックはセル単位で書くため、import位置 (E402) と未使用import (F401) は許容する。
+# mdセル (# MAGIC) の日本語散文は行長 (E501) の対象外にする。
+"src/notebooks/**/*.py" = ["E402", "F401", "E501"]
