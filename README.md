@@ -19,7 +19,7 @@ Databricks の streaming / バッチ更新まわりを手を動かして学ぶ�
 ### B. 変換・書き込み
 
 - [04. 選択的上書き](src/notebooks/b_transform_write/04_replace_where.ipynb) — `replaceWhere` と `replaceUsing`、Liquid Clustering
-- 05. `MERGE INTO` によるUpsert
+- [05. mergeInto](src/notebooks/b_transform_write/05_merge_into.ipynb) — 列単位の更新、`whenNotMatchedBySource`、SQLとの対応
 - 06. 冪等な書き込み
 - 07. ウォーターマークと遅延データ処理
 
