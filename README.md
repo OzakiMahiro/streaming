@@ -6,6 +6,10 @@ DAB (Databricks Asset Bundles) を前提に `src` レイアウトで構成して
 
 ## トピック一覧
 
+### セットアップ
+
+- [00. セットアップ](src/notebooks/00_setup.py) — カタログ/スキーマ/Volumeの作成とサンプルデータ投入
+
 ### A. 取り込み
 
 - [01. Auto Loader (`cloudFiles`)](src/notebooks/a_ingestion/01_auto_loader.py)

@@ -5,23 +5,26 @@ Notes
 -----
 Unity Catalogのカタログ名・スキーマ名・Volumeパスなどをここに集約する。
 各ノートブックからは `sys.path` 経由でこのモジュールをimportして使う想定。
-値は環境依存のため、実際に使う前にTODOを埋めること。
+ここで定義したカタログ/スキーマ/Volumeは `src/notebooks/00_setup.py` で作成する。
 """
 
 from dataclasses import dataclass
 
+CATALOG: str = "tech_survey"
 
-# TODO: 実際に使用するUnity Catalogのカタログ名に置き換える
-CATALOG: str = "TODO_catalog"
-
-# TODO: メダリオン各層のスキーマ名に置き換える
+# メダリオン各層のスキーマ
 SCHEMA_BRONZE: str = "bronze"
 SCHEMA_SILVER: str = "silver"
 SCHEMA_GOLD: str = "gold"
 
-# TODO: Auto Loaderのソース/チェックポイント用Volumeパスに置き換える
-VOLUME_LANDING_PATH: str = "/Volumes/TODO_catalog/TODO_schema/landing"
-VOLUME_CHECKPOINT_PATH: str = "/Volumes/TODO_catalog/TODO_schema/checkpoints"
+# 運用用スキーマ: 取り込み元ファイルやチェックポイントなど、テーブル以外の置き場所
+SCHEMA_OPS: str = "ops"
+
+# LDP (Lakeflow Declarative Pipelines) の出力先スキーマ - Jobs方式との比較のため分けている
+SCHEMA_LDP: str = "ldp"
+
+VOLUME_LANDING_PATH: str = f"/Volumes/{CATALOG}/{SCHEMA_OPS}/landing"
+VOLUME_CHECKPOINT_PATH: str = f"/Volumes/{CATALOG}/{SCHEMA_OPS}/checkpoints"
 
 
 @dataclass(frozen=True)
@@ -53,4 +56,4 @@ class TableLocation:
         str
             完全修飾テーブル名。
         """
-        raise NotImplementedError
+        return f"{self.catalog}.{self.schema}.{self.table}"
