@@ -65,3 +65,5 @@ service-account*.json
 .vscode/
 .databricks
 .claude
+# setup-local が作るバックアップ
+*.bak
