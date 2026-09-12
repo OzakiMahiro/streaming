@@ -14,7 +14,7 @@ Databricks の streaming / バッチ更新まわりを手を動かして学ぶ�
 
 - [01. Auto Loader (`cloudFiles`)](src/notebooks/a_ingestion/01_auto_loader.ipynb) — 増分取り込み、チェックポイント、スキーマ推論
 - [02. トリガー](src/notebooks/a_ingestion/02_structured_streaming_basics.ipynb) — `availableNow` と `once`、サーバーレスの制約
-- 03. Change Data Feed (CDF) によるテーブル間伝播
+- [03. Change Data Feed (CDF) によるテーブル間伝播](src/notebooks/a_ingestion/03_change_data_feed.ipynb)
 
 ### B. 変換・書き込み
 
