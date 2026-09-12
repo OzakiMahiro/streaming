@@ -8,7 +8,7 @@ DAB (Databricks Asset Bundles) を前提に `src` レイアウトで構成して
 
 ### セットアップ
 
-- [00. セットアップ](src/notebooks/00_setup.py) — カタログ/スキーマ/Volumeの作成とサンプルデータ投入
+- [00. セットアップ](src/notebooks/00_setup.py) — カタログ/スキーマ/Volumeの作成
 
 ### A. 取り込み
 
@@ -64,7 +64,7 @@ uv sync
 databricks bundle deploy --target dev
 
 # 2. ワークスペース上で 00_setup ノートブックを実行する
-#    カタログ/スキーマ/Volumeとサンプルデータが作成される
+#    カタログ/スキーマ/Volumeが作成される
 #    /Workspace/Users/<ユーザー名>/.bundle/streaming/dev/files/src/notebooks/00_setup
 
 # 3. 再デプロイする。カタログができているのでパイプラインも作成される

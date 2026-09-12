@@ -5,13 +5,12 @@
 # MAGIC 各トピックの調査に必要な土台を用意する。他のノートブックを動かす前に、まずこれを1回実行する。
 # MAGIC
 # MAGIC ## やること
-# MAGIC - Unity Catalogのカタログ/スキーマ/Volumeを作成
-# MAGIC - Auto Loaderの取り込み元となるサンプルデータ (注文イベントのJSON) をlanding Volumeに配置
+# MAGIC Unity Catalogのカタログ・スキーマ・Volumeを作成する。
 # MAGIC
 # MAGIC ## 注意
-# MAGIC カタログ/スキーマ/Volumeの作成は `IF NOT EXISTS` なので何度実行してもよい。
-# MAGIC 一方、サンプルデータ投入セルは実行するたびに新しいファイルが増える
-# MAGIC (増分ファイルの到着を再現するための挙動なので、意図的にそうしている)。
+# MAGIC すべて `IF NOT EXISTS` なので何度実行してもよい。
+# MAGIC 取り込むサンプルデータは各トピックのノートブックが自分のサブディレクトリに用意するため、
+# MAGIC ここでは作成しない。
 
 # COMMAND ----------
 
@@ -35,7 +34,6 @@ from streaming.common.config import (
     VOLUME_CHECKPOINT_PATH,
     VOLUME_LANDING_PATH,
 )
-from streaming.common.sample_data import generate_orders, write_batch
 
 # COMMAND ----------
 
@@ -57,24 +55,8 @@ for schema in (SCHEMA_BRONZE, SCHEMA_SILVER, SCHEMA_GOLD, SCHEMA_OPS, SCHEMA_LDP
 spark.sql(f"CREATE VOLUME IF NOT EXISTS {CATALOG}.{SCHEMA_OPS}.landing")
 spark.sql(f"CREATE VOLUME IF NOT EXISTS {CATALOG}.{SCHEMA_OPS}.checkpoints")
 
-display(spark.sql(f"SHOW SCHEMAS IN {CATALOG}"))
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ## サンプルデータの投入
-# MAGIC
-# MAGIC 注文イベントをJSON Lines形式で1ファイル書き出す。
-# MAGIC このセルを複数回実行すると、そのたびに新しいファイルがlanding Volumeに増える。
-# MAGIC Auto Loaderやストリーミングの増分処理を試すときは、ストリーム実行中にここを再実行するとよい。
-
-# COMMAND ----------
-
-records = generate_orders(n_records=200, late_ratio=0.1, seed=None)
-file_path = write_batch(VOLUME_LANDING_PATH, records)
-
-print(f"書き出したファイル: {file_path}")
-print(f"レコード数: {len(records)}")
+print(f"取り込み元のベースパス: {VOLUME_LANDING_PATH}")
+print(f"チェックポイントのベースパス: {VOLUME_CHECKPOINT_PATH}")
 
 # COMMAND ----------
 
@@ -83,11 +65,17 @@ print(f"レコード数: {len(records)}")
 
 # COMMAND ----------
 
-display(dbutils.fs.ls(VOLUME_LANDING_PATH))
+display(spark.sql(f"SHOW SCHEMAS IN {CATALOG}"))
 
 # COMMAND ----------
 
-display(spark.read.json(VOLUME_LANDING_PATH).limit(20))
+display(spark.sql(f"SHOW VOLUMES IN {CATALOG}.{SCHEMA_OPS}"))
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ここまで成功していれば `01_auto_loader` から順に進められる。
+# MAGIC 各ノートブックは `landing/<トピック名>/` に自分の取り込み元データを作るため、互いに干渉しない。
 
 # COMMAND ----------
 
