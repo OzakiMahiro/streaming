@@ -1,0 +1,48 @@
+resources:
+  jobs:
+    streaming_survey_job:
+      name: streaming_survey_job
+      description: >-
+        ETL/streaming技術調査用の探索的Job。
+        LDP(08, 09)以外の各トピックノートブックを独立タスクとして並べており、手動実行を想定する。
+      # TODO: 定期実行する場合はscheduleを追加する
+      # schedule:
+      #   quartz_cron_expression: "0 0 6 * * ?"
+      #   timezone_id: Asia/Tokyo
+      tasks:
+        - task_key: auto_loader
+          notebook_task:
+            notebook_path: ../../src/notebooks/a_ingestion/01_auto_loader.py
+        - task_key: structured_streaming_basics
+          notebook_task:
+            notebook_path: ../../src/notebooks/a_ingestion/02_structured_streaming_basics.py
+        - task_key: change_data_feed
+          notebook_task:
+            notebook_path: ../../src/notebooks/a_ingestion/03_change_data_feed.py
+        - task_key: replace_where
+          notebook_task:
+            notebook_path: ../../src/notebooks/b_transform_write/04_replace_where.py
+        - task_key: merge_into
+          notebook_task:
+            notebook_path: ../../src/notebooks/b_transform_write/05_merge_into.py
+        - task_key: idempotent_writes
+          notebook_task:
+            notebook_path: ../../src/notebooks/b_transform_write/06_idempotent_writes.py
+        - task_key: watermark_late_data
+          notebook_task:
+            notebook_path: ../../src/notebooks/b_transform_write/07_watermark_late_data.py
+        - task_key: optimize_zorder_liquid_clustering
+          notebook_task:
+            notebook_path: ../../src/notebooks/d_table_optimization/10_optimize_zorder_liquid_clustering.py
+        - task_key: vacuum_time_travel
+          notebook_task:
+            notebook_path: ../../src/notebooks/d_table_optimization/11_vacuum_time_travel.py
+        - task_key: schema_evolution
+          notebook_task:
+            notebook_path: ../../src/notebooks/d_table_optimization/12_schema_evolution.py
+        - task_key: workflows_jobs
+          notebook_task:
+            notebook_path: ../../src/notebooks/e_orchestration_monitoring/13_workflows_jobs.py
+        - task_key: streaming_metrics_monitoring
+          notebook_task:
+            notebook_path: ../../src/notebooks/e_orchestration_monitoring/14_streaming_metrics_monitoring.py

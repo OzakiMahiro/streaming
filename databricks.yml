@@ -1,19 +1,18 @@
-# This is a Declarative Automation Bundle definition for streaming.
-# The Databricks extension requires databricks.yml configuration file.
-# See https://docs.databricks.com/dev-tools/bundles/index.html for documentation.
-
+# IDEで補完・検証を効かせたい場合は `databricks bundle schema > bundle_config_schema.json` を実行し、
+# 生成された bundle_config_schema.json を参照する `# yaml-language-server: $schema=...` 行を追加する
 bundle:
   name: streaming
+
+include:
+  - resources/*.yml
+  - resources/*/*.yml
+
+# TODO: serverlessではなくクラシックコンピュートを使う場合はここに job_clusters / clusters を追加する
 
 targets:
   dev:
     mode: development
     default: true
     workspace:
-      host: https://dbc-6f498009-072a.cloud.databricks.com
-
-  ## Optionally, there could be 'staging' or 'prod' targets here.
-  #
-  # prod:
-  #   workspace:
-  #     host: https://dbc-6f498009-072a.cloud.databricks.com
+      # ~/.databrickscfg の [free] プロファイルを使う (公開リポジトリのためホストURLは直書きしない)
+      profile: free

@@ -1,0 +1,13 @@
+resources:
+  pipelines:
+    lakeflow_declarative_pipelines:
+      name: streaming_lakeflow_declarative_pipelines
+      # TODO: src/streaming/common/config.pyのCATALOGと合わせる
+      catalog: TODO_catalog
+      target: ${bundle.target}
+      serverless: true
+      libraries:
+        - notebook:
+            path: ../../src/notebooks/c_declarative_pipelines/08_lakeflow_declarative_pipelines.py
+        - notebook:
+            path: ../../src/notebooks/c_declarative_pipelines/09_data_quality_expectations.py
