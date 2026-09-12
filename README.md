@@ -43,11 +43,54 @@ DAB (Databricks Asset Bundles) を前提に `src` レイアウトで構成して
 
 ## セットアップ
 
+### 1. ローカル環境
+
 ```sh
 uv sync
 ```
 
-`src/streaming/common/config.py` のカタログ名・スキーマ名・Volumeパスを自分の環境に合わせて設定する。
+カタログ名やスキーマ名を変えたい場合は `src/streaming/common/config.py` を編集する。
+変更した場合は `resources/pipelines/lakeflow_declarative_pipelines.pipeline.yml` の `catalog` / `schema` も合わせる。
+
+### 2. Databricksへの初回デプロイ
+
+`databricks.yml` は `~/.databrickscfg` の `free` プロファイルを参照している。別のプロファイルを使う場合は書き換える。
+
+初回は以下の順番で実行する。
+
+```sh
+# 1. ノートブックをワークスペースに同期する
+#    カタログが未作成のためパイプライン作成だけエラーになるが、この時点では想定どおり
+databricks bundle deploy --target dev
+
+# 2. ワークスペース上で 00_setup ノートブックを実行する
+#    カタログ/スキーマ/Volumeとサンプルデータが作成される
+#    /Workspace/Users/<ユーザー名>/.bundle/streaming/dev/files/src/notebooks/00_setup
+
+# 3. 再デプロイする。カタログができているのでパイプラインも作成される
+databricks bundle deploy --target dev
+```
+
+> **なぜ初回だけデプロイが2回必要か**
+>
+> パイプライン定義は `catalog: tech_survey` を参照するが、このカタログを作るのは `00_setup.py` である。
+> 一方で `00_setup.py` をワークスペースで実行するには、先にファイルを同期しておく必要がある。
+> この循環のため、初回のみ「同期 → セットアップ実行 → 再デプロイ」の順を踏む。
+> 2回目以降は `databricks bundle deploy --target dev` の1回で完結する。
+
+手順2をCLIで行う場合は、一度きりのジョブとして実行する。
+
+```sh
+databricks jobs submit --json '{
+  "run_name": "streaming-00-setup",
+  "tasks": [{
+    "task_key": "setup",
+    "notebook_task": {
+      "notebook_path": "/Workspace/Users/<ユーザー名>/.bundle/streaming/dev/files/src/notebooks/00_setup"
+    }
+  }]
+}'
+```
 
 ## ディレクトリ構成
 
@@ -65,9 +108,21 @@ streaming/
 └── tests/
 ```
 
-## デプロイ
+## 2回目以降のデプロイ
+
+初回セットアップさえ済んでいれば、以降は1回のデプロイで完結する。
 
 ```sh
 databricks bundle validate
 databricks bundle deploy --target dev
 ```
+
+デプロイすると、ノートブックは以下に同期される。ブラウザで開けばNotebook UIとして実行できる。
+
+```
+/Workspace/Users/<ユーザー名>/.bundle/streaming/dev/files/src/notebooks/
+```
+
+devターゲットではJob/Pipelineに `[dev <ユーザー名>]` のプレフィックスが付き、開発用としてマークされる。
+作成したリソースをまとめて削除したい場合は `databricks bundle destroy --target dev` を使う
+(Unity Catalogのカタログ/スキーマ/Volumeはバンドル管理外なので、`00_setup.py` 末尾の後片付けセルで消す)。
