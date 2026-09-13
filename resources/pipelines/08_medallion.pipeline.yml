@@ -1,0 +1,11 @@
+resources:
+  pipelines:
+    medallion_ldp:
+      name: 08_medallion_ldp
+      # 出力先。00_setup で作った ldp スキーマに書く
+      catalog: tech_survey
+      schema: ldp
+      serverless: true
+      libraries:
+        - glob:
+            include: ../../src/pipelines/08_medallion/transformations/**
