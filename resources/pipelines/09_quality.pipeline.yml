@@ -1,0 +1,15 @@
+resources:
+  pipelines:
+    quality_ldp:
+      name: 09_quality_ldp
+      catalog: tech_survey
+      schema: ldp
+      serverless: true
+      # イベントログをUCのテーブルに出す。これで期待違反をSQLで確認できる
+      event_log:
+        catalog: tech_survey
+        schema: ldp
+        name: quality_event_log
+      libraries:
+        - glob:
+            include: ../../src/pipelines/09_quality/transformations/**
