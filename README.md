@@ -25,7 +25,7 @@ Databricks の streaming / バッチ更新まわりを手を動かして学ぶ�
 
 ### C. 宣言的パイプライン
 
-- 08. Lakeflow Declarative Pipelines (旧DLT)
+- [08. Lakeflow Declarative Pipelines](src/notebooks/c_declarative_pipelines/08_lakeflow_declarative_pipelines.ipynb) — ストリーミングテーブルとマテリアライズドビュー、DABでのデプロイ
 - 09. データ品質 (Expectations)
 
 ### D. テーブル最適化・運用
@@ -106,5 +106,6 @@ streaming/
 ├── resources/
 │   └── pipelines/       # Lakeflow Declarative Pipelines の定義 (08, 09で使う)
 └── src/
-    └── notebooks/       # 調査用ノートブック
+    ├── notebooks/       # 調査用ノートブック
+    └── pipelines/       # Lakeflow Declarative Pipelines のソース (08, 09)
 ```
