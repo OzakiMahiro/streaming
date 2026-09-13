@@ -26,7 +26,7 @@ Databricks の streaming / バッチ更新まわりを手を動かして学ぶ�
 ### C. 宣言的パイプライン
 
 - [08. Lakeflow Declarative Pipelines](src/notebooks/c_declarative_pipelines/08_lakeflow_declarative_pipelines.ipynb) — ストリーミングテーブルとマテリアライズドビュー、DABでのデプロイ
-- 09. データ品質 (Expectations)
+- [09. データ品質 (Expectations)](src/notebooks/c_declarative_pipelines/09_data_quality_expectations.ipynb) — `expect` / `drop` / `fail` の使い分け、イベントログ
 
 ### D. テーブル最適化・運用
 
