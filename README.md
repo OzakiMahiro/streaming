@@ -32,7 +32,7 @@ Databricks の streaming / バッチ更新まわりを手を動かして学ぶ�
 
 - [10. OPTIMIZE と Liquid Clustering](src/notebooks/d_table_optimization/10_optimize_clustering.ipynb) — スモールファイル問題、Z-ORDER との違い
 - [11. タイムトラベルと VACUUM](src/notebooks/d_table_optimization/11_vacuum_time_travel.ipynb) — 過去を読む / 戻す、保持期間の決め方
-- 12. スキーマ進化
+- [12. スキーマ進化](src/notebooks/d_table_optimization/12_schema_evolution.ipynb) — Auto Loader でのスキーマ推論と進化
 
 ### E. オーケストレーション・監視
 
