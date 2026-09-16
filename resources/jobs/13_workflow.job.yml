@@ -1,0 +1,30 @@
+resources:
+  jobs:
+    survey_job:
+      name: 13_survey_job
+      # 実行のたびに渡せる値。既定は false で、true にすると transform がわざと失敗する
+      parameters:
+        - name: fail_transform
+          default: "false"
+      tasks:
+        - task_key: ingest
+          notebook_task:
+            notebook_path: ../../src/jobs/13_workflow/ingest.py
+
+        - task_key: transform
+          # ingest が成功してから動く
+          depends_on:
+            - task_key: ingest
+          # 失敗しても1回だけやり直す
+          max_retries: 1
+          min_retry_interval_millis: 10000
+          notebook_task:
+            notebook_path: ../../src/jobs/13_workflow/transform.py
+            base_parameters:
+              fail_transform: "{{job.parameters.fail_transform}}"
+
+        - task_key: publish
+          depends_on:
+            - task_key: transform
+          notebook_task:
+            notebook_path: ../../src/jobs/13_workflow/publish.py
