@@ -1,7 +1,7 @@
 # streaming
 
 Databricks の streaming / バッチ更新まわりを手を動かして学ぶためのリポジトリ。
-メダリオンアーキテクチャにおける日次更新ETL戦略を検討することを目標に、5カテゴリ・14トピックを順に調べる。
+メダリオンアーキテクチャにおける日次更新ETL戦略を検討することを目標に、5カテゴリ・15トピックを順に調べる。
 
 各トピックは Jupyter ノートブック (`.ipynb`) 1本で完結する。
 ローカルの VS Code でセルを1つずつ実行し、処理自体は databricks-connect 経由で Databricks 側で動く。
@@ -27,6 +27,7 @@ Databricks の streaming / バッチ更新まわりを手を動かして学ぶ�
 
 - [08. Lakeflow Declarative Pipelines](src/notebooks/c_declarative_pipelines/08_lakeflow_declarative_pipelines.ipynb) — ストリーミングテーブルとマテリアライズドビュー、DABでのデプロイ
 - [09. データ品質 (Expectations)](src/notebooks/c_declarative_pipelines/09_data_quality_expectations.ipynb) — `expect` / `drop` / `fail` の使い分け、イベントログ
+- [15. Auto CDC](src/notebooks/c_declarative_pipelines/15_auto_cdc.ipynb) — 変更を当てる、スナップショットを畳む (`14` の後に追加)
 
 ### D. テーブル最適化・運用
 
