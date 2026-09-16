@@ -40,7 +40,7 @@ Databricks の streaming / バッチ更新まわりを手を動かして学ぶ�
 - [13. Workflows / Jobs](src/notebooks/e_orchestration_monitoring/13_workflows_jobs.ipynb) — タスクの依存、リトライ、LDP との使い分け
 - [14. ストリーミングの監視](src/notebooks/e_orchestration_monitoring/14_streaming_metrics.ipynb) — `recentProgress`、未処理量の見方
 
-リンクが付いているものが作成済み。それ以外はこれから作る。
+番号順に読むことを想定している。後の回は前の回で確かめたことを前提にしている。
 
 ### X. 総括
 各調査を踏まえた全体設計方針は [docs/etl_strategy.md](docs/etl_strategy.md) にまとめる。
@@ -94,20 +94,35 @@ VS Code の Databricks 拡張機能が有効だと、`display(df)` が表とし�
 
 ## この環境の制約
 
-Databricks Free Edition は**サーバーレス専用**で、クラシックコンピュートを作れない。
+このリポジトリの検証は **Databricks Free Edition** で行っている。
+
+Free Edition は**サーバーレス専用**で、クラシックコンピュートを作れない。
 そのため終わらないトリガー (`processingTime`、無指定) は使えず、`availableNow` と `once` だけが使える。
 詳細は [02](src/notebooks/a_ingestion/02_structured_streaming_basics.ipynb) で扱う。
+
+このほか、サーバー側でPythonを実行する仕組みが動かない
+(`foreachBatch`、Python UDF が使えない。[06](src/notebooks/b_transform_write/06_idempotent_writes.ipynb) で扱う)。
+
+**実際に設計しているシステムは Databricks on AWS の有償版** なので、これらの制約は当てはまらない。
+どこが変わるかは [docs/etl_strategy.md](docs/etl_strategy.md) の「検証環境と本番環境の差」にまとめてある。
 
 ## ディレクトリ構成
 
 ```
 streaming/
-├── databricks.yml       # VS CodeのDatabricks拡張機能が参照する。08/09のパイプラインでも使う
+├── databricks.yml       # DABの定義。VS Codeの拡張機能も参照する
 ├── docs/
-│   └── etl_strategy.md  # 全体設計方針
-├── resources/
-│   └── pipelines/       # Lakeflow Declarative Pipelines の定義 (08, 09で使う)
+│   └── etl_strategy.md  # 全体設計方針。15本を踏まえた判断の記録
+├── resources/           # Databricks側に作るものの定義 (DABが読む)
+│   ├── jobs/            # ジョブ (13)
+│   └── pipelines/       # Lakeflow Declarative Pipelines (08, 09, 15)
 └── src/
-    ├── notebooks/       # 調査用ノートブック
-    └── pipelines/       # Lakeflow Declarative Pipelines のソース (08, 09)
+    ├── notebooks/       # 調査用ノートブック。ローカルのVS Codeで実行する
+    ├── jobs/            # ジョブのタスク (13)。Databricks側で動く
+    └── pipelines/       # パイプラインのソース (08, 09, 15)。Databricks側で動く
 ```
+
+`src/notebooks/` だけがローカルで動く。
+`src/jobs/` と `src/pipelines/` は **Databricks側で動くコード** で、
+`databricks bundle deploy` でワークスペースに配置してから使う。
+そのため `.ipynb` ではなく `.py` で置いてある。
