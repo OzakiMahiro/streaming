@@ -76,12 +76,12 @@ Type 2 だと区間の比較が結合条件に入り込む。
 
 | やりたいこと | Jobs (手続き) | LDP (宣言) | 検証状況 |
 |---|---|---|---|
-| 追記する | `.mode("append")` | `@dp.table` + `readStream` | 両方あり (`01` `08`) |
-| 全件作り直す | `CREATE OR REPLACE TABLE AS SELECT` | マテリアライズドビュー (`read`) | 両方あり (`08`) |
-| **範囲を入れ替える** | **`replaceWhere`** | REPLACE WHERE フロー | Jobs (`04`) / LDP未検証 |
-| キーで行を丸ごと置換 | `replaceUsing` | — (Auto CDCに吸収) | Jobs (`04`) |
-| **キーで行ごとに更新** | **`mergeInto`** | **`create_auto_cdc_flow`** | Jobs (`05`) / LDP (`15`) |
-| スナップショットから履歴を作る | 無い (自分で書く) | **`create_auto_cdc_from_snapshot_flow`** | LDPのみ (`15`) |
+| 追記する | `.mode("append")` | `@dp.table` + `readStream` | 両方あり ([`01`](../src/notebooks/a_ingestion/01_auto_loader.ipynb) [`08`](../src/notebooks/c_declarative_pipelines/08_lakeflow_declarative_pipelines.ipynb)) |
+| 全件作り直す | `CREATE OR REPLACE TABLE AS SELECT` | マテリアライズドビュー (`read`) | 両方あり ([`08`](../src/notebooks/c_declarative_pipelines/08_lakeflow_declarative_pipelines.ipynb)) |
+| **範囲を入れ替える** | **`replaceWhere`** | REPLACE WHERE フロー | Jobs ([`04`](../src/notebooks/b_transform_write/04_replace_where.ipynb)) / LDP未検証 |
+| キーで行を丸ごと置換 | `replaceUsing` | — (Auto CDCに吸収) | Jobs ([`04`](../src/notebooks/b_transform_write/04_replace_where.ipynb)) |
+| **キーで行ごとに更新** | **`mergeInto`** | **`create_auto_cdc_flow`** | Jobs ([`05`](../src/notebooks/b_transform_write/05_merge_into.ipynb)) / LDP ([`15`](../src/notebooks/c_declarative_pipelines/15_auto_cdc.ipynb)) |
+| スナップショットから履歴を作る | 無い (自分で書く) | **`create_auto_cdc_from_snapshot_flow`** | LDPのみ ([`15`](../src/notebooks/c_declarative_pipelines/15_auto_cdc.ipynb)) |
 
 上から下へ行くほど、**入力が「全件」から「差分」に寄り**、**出力が「状態」から「履歴」に寄る**。
 
@@ -102,10 +102,10 @@ Type 2 だと区間の比較が結合条件に入り込む。
 
 | | Jobs | LDP |
 |---|---|---|
-| 冪等性 | 自分で担保する。`txnAppId` / `txnVersion` (`06`) または上書き | エンジンが持つ |
-| 品質チェック | 自前の検証クエリ (`13` のタスク) | expectations (`09`) |
+| 冪等性 | 自分で担保する。`txnAppId` / `txnVersion` ([`06`](../src/notebooks/b_transform_write/06_idempotent_writes.ipynb)) または上書き | エンジンが持つ |
+| 品質チェック | 自前の検証クエリ ([`13`](../src/notebooks/e_orchestration_monitoring/13_workflows_jobs.ipynb) のタスク) | expectations ([`09`](../src/notebooks/c_declarative_pipelines/09_data_quality_expectations.ipynb)) |
 
-ただし **LDPのREPLACE WHEREフローには expectations を併用できない** (`08`)。
+ただし **LDPのREPLACE WHEREフローには expectations を併用できない** ([`08`](../src/notebooks/c_declarative_pipelines/08_lakeflow_declarative_pipelines.ipynb))。
 3行目をLDPでやると、右下の利点が1つ消える。2章で「ジョブ中心」を選んだ理由のひとつ。
 
 ## 決定サマリ
@@ -113,16 +113,16 @@ Type 2 だと区間の比較が結合条件に入り込む。
 | 項目 | 決めたこと | 根拠 |
 |---|---|---|
 | 取り込み | **基幹が全件ファイルを吐く形を第一候補**。未確定 | 1章 |
-| 全体構成 | ジョブ中心のバッチETL | `04` `08` `13` |
-| Bronze | 追記のみ。置き換えない | `01` `12` |
-| Silver | **`deem_date` 単位の `replaceWhere`** | `04` |
-| 版の判別 | `_metadata.file_modification_time` を Bronze で1列持つ | `12` |
-| Gold | 毎回作り直す | `07` |
-| 冪等性 | `replaceWhere` と上書きで担保する | `04` `06` |
-| 品質チェック | Silver の手前に検証タスクを置く | `09` `13` |
-| 最適化 | Predictive Optimization に任せる | `10` |
-| 保持期間 | `VACUUM` は既定の7日から始める | `11` |
-| 監視 | `on_failure` の webhook + 未処理量 + 検証結果 | `13` `14` |
+| 全体構成 | ジョブ中心のバッチETL | [`04`](../src/notebooks/b_transform_write/04_replace_where.ipynb) [`08`](../src/notebooks/c_declarative_pipelines/08_lakeflow_declarative_pipelines.ipynb) [`13`](../src/notebooks/e_orchestration_monitoring/13_workflows_jobs.ipynb) |
+| Bronze | 追記のみ。置き換えない | [`01`](../src/notebooks/a_ingestion/01_auto_loader.ipynb) [`12`](../src/notebooks/d_table_optimization/12_schema_evolution.ipynb) |
+| Silver | **`deem_date` 単位の `replaceWhere`** | [`04`](../src/notebooks/b_transform_write/04_replace_where.ipynb) |
+| 版の判別 | `_metadata.file_modification_time` を Bronze で1列持つ | [`12`](../src/notebooks/d_table_optimization/12_schema_evolution.ipynb) |
+| Gold | 毎回作り直す | [`07`](../src/notebooks/b_transform_write/07_watermark_late_data.ipynb) |
+| 冪等性 | `replaceWhere` と上書きで担保する | [`04`](../src/notebooks/b_transform_write/04_replace_where.ipynb) [`06`](../src/notebooks/b_transform_write/06_idempotent_writes.ipynb) |
+| 品質チェック | Silver の手前に検証タスクを置く | [`09`](../src/notebooks/c_declarative_pipelines/09_data_quality_expectations.ipynb) [`13`](../src/notebooks/e_orchestration_monitoring/13_workflows_jobs.ipynb) |
+| 最適化 | Predictive Optimization に任せる | [`10`](../src/notebooks/d_table_optimization/10_optimize_clustering.ipynb) |
+| 保持期間 | `VACUUM` は既定の7日から始める | [`11`](../src/notebooks/d_table_optimization/11_vacuum_time_travel.ipynb) |
+| 監視 | `on_failure` の webhook + 未処理量 + 検証結果 | [`13`](../src/notebooks/e_orchestration_monitoring/13_workflows_jobs.ipynb) [`14`](../src/notebooks/e_orchestration_monitoring/14_streaming_metrics.ipynb) |
 
 ---
 
@@ -145,7 +145,7 @@ Type 2 だと区間の比較が結合条件に入り込む。
 
 理由は、**このモデルに変換を挟まないこと**。
 `deem_date` モデルは「版ごとの全件」が前提で、基幹側がその形で出せるなら、
-Databricks側は受け取るだけで済む。`01` で確かめた形がそのまま使える。
+Databricks側は受け取るだけで済む。[`01`](../src/notebooks/a_ingestion/01_auto_loader.ipynb) で確かめた形がそのまま使える。
 
 **CDC系が △ な理由**: Lakeflow Connect のデータベースコネクタは **変更イベント** を運ぶ仕組み。
 「注文1が更新された」という形で届く。そこから「版ごとの全件」を組み立て直す処理が要る。
@@ -166,19 +166,19 @@ Databricks側は受け取るだけで済む。`01` で確かめた形がその�
 **決定**: ジョブのタスクとして、バッチ処理を順に並べる。LDPは現時点では採らない。
 
 **理由**: このモデルの中核の操作が **`deem_date` 単位の全置換** だから。
-これは `04` で確かめた `replaceWhere` そのもので、バッチ書き込みのオプションになる。
+これは [`04`](../src/notebooks/b_transform_write/04_replace_where.ipynb) で確かめた `replaceWhere` そのもので、バッチ書き込みのオプションになる。
 
 LDPにも同等の仕組み (REPLACE WHERE フロー) があり、
-`@dp.table(replace_where=...)` と書けることまでは確認した (`08`)。
+`@dp.table(replace_where=...)` と書けることまでは確認した ([`08`](../src/notebooks/c_declarative_pipelines/08_lakeflow_declarative_pipelines.ipynb))。
 ただし2点が引っかかる。
 
 - **このリポジトリで動かしていない**
-- **expectations を併用できない** 制約がある (`08` で確認)
+- **expectations を併用できない** 制約がある ([`08`](../src/notebooks/c_declarative_pipelines/08_lakeflow_declarative_pipelines.ipynb) で確認)
 
-`04` で実際に動かした方法が使える以上、まずそちらを採る。
+[`04`](../src/notebooks/b_transform_write/04_replace_where.ipynb) で実際に動かした方法が使える以上、まずそちらを採る。
 
 **却下した案**: LDP 中心。
-素直なメダリオン構成なら LDP のほうが書く量は減る (`08`)。
+素直なメダリオン構成なら LDP のほうが書く量は減る ([`08`](../src/notebooks/c_declarative_pipelines/08_lakeflow_declarative_pipelines.ipynb))。
 ただしそれは **追記で流れていく形** に強いのであって、
 版ごとの全置換が中核にあるこのモデルでは利点が薄れる。
 
@@ -209,11 +209,11 @@ LDPにも同等の仕組み (REPLACE WHERE フロー) があり、
 
 **型とスキーマ**: 型変換も品質チェックもしない。
 
-Auto Loader は既定で全列を文字列として推論する (`12`)。
+Auto Loader は既定で全列を文字列として推論する ([`12`](../src/notebooks/d_table_optimization/12_schema_evolution.ipynb))。
 型を決めないので、上流が想定外の値を入れても取り込みが止まらない。
 `cloudFiles.schemaEvolutionMode` は既定 (`addNewColumns`) のまま。
 列が増えると1回落ちるが、それが **基幹側の変更に気づく機会** になる。
-落ちたぶんはジョブのリトライで吸収する (`12` `13`)。
+落ちたぶんはジョブのリトライで吸収する ([`12`](../src/notebooks/d_table_optimization/12_schema_evolution.ipynb) [`13`](../src/notebooks/e_orchestration_monitoring/13_workflows_jobs.ipynb))。
 
 ## 4. Silver — `deem_date` 単位で置き換える
 
@@ -230,7 +230,7 @@ Auto Loader は既定で全列を文字列として推論する (`12`)。
 
 **理由**: 運用の要件が `replaceWhere` の性質と一致している。
 
-`04` で確かめたとおり、`replaceWhere` は **範囲内で渡さなかった行を消す**。
+[`04`](../src/notebooks/b_transform_write/04_replace_where.ipynb) で確かめたとおり、`replaceWhere` は **範囲内で渡さなかった行を消す**。
 普通はこれが事故のもとになるが、このモデルでは **それが正しい動作** になる。
 2回目のマスタに含まれていない店舗は、その `deem_date` から消えるべきだから。
 
@@ -241,7 +241,7 @@ Auto Loader は既定で全列を文字列として推論する (`12`)。
 時系列マスタ (`business_date` × `deem_date`) でも、置き換え単位は `deem_date` のまま。
 その版の全 `business_date` 分がまとめて入れ替わる。
 
-**却下した案**: キーで突き合わせる方式 (`05` の `mergeInto`、LDPの Auto CDC)。
+**却下した案**: キーで突き合わせる方式 ([`05`](../src/notebooks/b_transform_write/05_merge_into.ipynb) の `mergeInto`、LDPの Auto CDC)。
 これらは **渡さなかった行を残す** 仕組みなので、逆の性質になる。
 2回目に含まれない店舗が消えず、要件を満たさない。
 
@@ -251,7 +251,7 @@ Auto Loader は既定で全列を文字列として推論する (`12`)。
 
 **理由**: 作り直しなので冪等で、遅れて届いたデータも次の実行で反映される。
 
-`07` でウォーターマークを扱ったが、**このモデルでは出番がない**。
+[`07`](../src/notebooks/b_transform_write/07_watermark_late_data.ipynb) でウォーターマークを扱ったが、**このモデルでは出番がない**。
 遅延が問題になるのは「イベント時刻で区切って集計する」場合で、
 `deem_date` という明示的な版がある以上、時間で区切る必要がない。
 
@@ -259,25 +259,25 @@ Auto Loader は既定で全列を文字列として推論する (`12`)。
 
 **決定**: `replaceWhere` と `CREATE OR REPLACE` で担保する。`txnAppId` / `txnVersion` は使わない。
 
-`06` で見た3つの手段のうち、**書き込む中身の側から冪等性を作る** ものを選んでいる。
+[`06`](../src/notebooks/b_transform_write/06_idempotent_writes.ipynb) で見た3つの手段のうち、**書き込む中身の側から冪等性を作る** ものを選んでいる。
 
 | 手段 | 使うか | 理由 |
 |---|---|---|
-| `replaceWhere` (`04`) | **使う** | 範囲を宣言して入れ替える。このモデルそのもの |
-| `mergeInto` (`05`) | 使わない | 渡さなかった行が残る。要件と逆 |
-| `txnAppId` / `txnVersion` (`06`) | 使わない | 追記のみの場合の手段。番号の管理が事故のもとになる |
+| `replaceWhere` ([`04`](../src/notebooks/b_transform_write/04_replace_where.ipynb)) | **使う** | 範囲を宣言して入れ替える。このモデルそのもの |
+| `mergeInto` ([`05`](../src/notebooks/b_transform_write/05_merge_into.ipynb)) | 使わない | 渡さなかった行が残る。要件と逆 |
+| `txnAppId` / `txnVersion` ([`06`](../src/notebooks/b_transform_write/06_idempotent_writes.ipynb)) | 使わない | 追記のみの場合の手段。番号の管理が事故のもとになる |
 
 ジョブのタスクは何度でも実行されうる。失敗したジョブを再実行すると、
-**成功済みのタスクも最初から動く** (`13`)。
-Bronze の追記だけは Auto Loader のチェックポイントが重複を防ぐ (`01`)。
+**成功済みのタスクも最初から動く** ([`13`](../src/notebooks/e_orchestration_monitoring/13_workflows_jobs.ipynb))。
+Bronze の追記だけは Auto Loader のチェックポイントが重複を防ぐ ([`01`](../src/notebooks/a_ingestion/01_auto_loader.ipynb))。
 それ以外は上書きなので、何度実行しても同じ結果になる。
 
 ## 7. 品質チェック — Silver の手前にタスクを置く
 
 **決定**: Bronze から Silver へ進む前に、検証タスクを1つ挟む。
 
-**理由**: LDPを使わないので `09` の expectations は使えない。あれはLDP専用の仕組み。
-代わりにジョブのタスクとして検証クエリを実行する (`13`)。
+**理由**: LDPを使わないので [`09`](../src/notebooks/c_declarative_pipelines/09_data_quality_expectations.ipynb) の expectations は使えない。あれはLDP専用の仕組み。
+代わりにジョブのタスクとして検証クエリを実行する ([`13`](../src/notebooks/e_orchestration_monitoring/13_workflows_jobs.ipynb))。
 
 このモデル特有の観点として、次を見る。
 
@@ -285,22 +285,22 @@ Bronze の追記だけは Auto Loader のチェックポイントが重複を防
 - **`deem_date` が想定どおり1種類か**。複数混ざっていたら取り込み側の異常
 - **キーの重複がないか**。`store_id` × `deem_date` で一意のはず
 
-方針は `09` と同じにする。
+方針は [`09`](../src/notebooks/c_declarative_pipelines/09_data_quality_expectations.ipynb) と同じにする。
 
 - **Bronze では弾かない**。基幹側が壊れた瞬間に取り込みが止まると、元ファイルが消えていれば戻せない
 - **業務上あり得ない値だけ止める**。1件の異常で日次処理全体を止めない
 
 ## 8. テーブル運用
 
-**最適化**: Predictive Optimization に任せる。`OPTIMIZE` を打つタスクは作らない (`10`)。
+**最適化**: Predictive Optimization に任せる。`OPTIMIZE` を打つタスクは作らない ([`10`](../src/notebooks/d_table_optimization/10_optimize_clustering.ipynb))。
 
-**クラスタリング**: Silver / Gold は `CLUSTER BY (deem_date)` で作る (`04` `10`)。
+**クラスタリング**: Silver / Gold は `CLUSTER BY (deem_date)` で作る ([`04`](../src/notebooks/b_transform_write/04_replace_where.ipynb) [`10`](../src/notebooks/d_table_optimization/10_optimize_clustering.ipynb))。
 
 `deem_date` は絞り込みにも `replaceWhere` にも使う列なので、寄せておく価値がある。
 パーティションではなく Liquid Clustering にするのは、**後からキーを変えられる** ため。
 時系列マスタは `CLUSTER BY (deem_date, business_date)` を検討する。
 
-**保持期間**: `VACUUM` は既定の7日から始める (`11`)。
+**保持期間**: `VACUUM` は既定の7日から始める ([`11`](../src/notebooks/d_table_optimization/11_vacuum_time_travel.ipynb))。
 
 ただしこのモデルは **`deem_date` 自体が履歴を持っている**。
 タイムトラベルに頼らなくても、過去の版はテーブルの中に残る。
@@ -313,25 +313,25 @@ Bronze の追記だけは Auto Loader のチェックポイントが重複を防
 
 | 何を | どこで | 通知 |
 |---|---|---|
-| ジョブの失敗 | ジョブの `on_failure` (`13`) | **webhook** 経由で電話まで飛ばす |
+| ジョブの失敗 | ジョブの `on_failure` ([`13`](../src/notebooks/e_orchestration_monitoring/13_workflows_jobs.ipynb)) | **webhook** 経由で電話まで飛ばす |
 | 検証タスクの失敗 | 7章の検証クエリ | 同上 |
-| 取り込みの遅れ | 未処理量 (`14`) | メール程度でよい |
+| 取り込みの遅れ | 未処理量 ([`14`](../src/notebooks/e_orchestration_monitoring/14_streaming_metrics.ipynb)) | メール程度でよい |
 
 **電話まで飛ばすなら `email_notifications` では足りない。**
 `webhook_notifications` を使って、PagerDuty のような通知基盤に投げる形になる。
-ジョブ定義に書ける (`13`)。
+ジョブ定義に書ける ([`13`](../src/notebooks/e_orchestration_monitoring/13_workflows_jobs.ipynb))。
 
 **電話を鳴らす対象は絞る。** 夜間に起こす価値があるのは、
 「朝までに直さないと業務が止まる」ものだけ。
 取り込みの遅れは、翌朝メールで気づけば間に合うことが多い。
 
-`on_success` は付けない。成功のたびに通知すると読まれなくなる (`13`)。
+`on_success` は付けない。成功のたびに通知すると読まれなくなる ([`13`](../src/notebooks/e_orchestration_monitoring/13_workflows_jobs.ipynb))。
 
 **このモデルで特に怖いのは、同じ `deem_date` の再送に気づかないこと。**
 Bronze に両方残しておけば、後から「2回来ていた」と分かる。3章の判断はここにも効く。
 
 監視が要る理由は共通している。
-`06` の `txnVersion`、`07` のウォーターマーク、`09` の expectations、`12` の `rescue` は、
+[`06`](../src/notebooks/b_transform_write/06_idempotent_writes.ipynb) の `txnVersion`、[`07`](../src/notebooks/b_transform_write/07_watermark_late_data.ipynb) のウォーターマーク、[`09`](../src/notebooks/c_declarative_pipelines/09_data_quality_expectations.ipynb) の expectations、[`12`](../src/notebooks/d_table_optimization/12_schema_evolution.ipynb) の `rescue` は、
 すべて **エラーを出さずに黙って進む**。見に行く仕組みがなければ気づけない。
 
 ## 10. 検証環境と本番環境の差
@@ -341,17 +341,17 @@ Bronze に両方残しておけば、後から「2回来ていた」と分かる
 
 | 検証環境での制約 | 本番では | 影響 |
 |---|---|---|
-| サーバーレス専用。`availableNow` と `once` しか使えない (`02`) | **クラシックコンピュートが使える** | 継続実行のストリームも組める。日次なら影響なし |
-| サーバー側でPythonが実行できない (`06` `14`) | **使えるはず** | `foreachBatch`、Python UDF、`StreamingQueryListener` が選択肢に戻る |
-| `retentionDurationCheck` を変更できない (`11`) | **変更できるはず** | `VACUUM ... RETAIN` が自由に使える |
+| サーバーレス専用。`availableNow` と `once` しか使えない ([`02`](../src/notebooks/a_ingestion/02_structured_streaming_basics.ipynb)) | **クラシックコンピュートが使える** | 継続実行のストリームも組める。日次なら影響なし |
+| サーバー側でPythonが実行できない ([`06`](../src/notebooks/b_transform_write/06_idempotent_writes.ipynb) [`14`](../src/notebooks/e_orchestration_monitoring/14_streaming_metrics.ipynb)) | **使えるはず** | `foreachBatch`、Python UDF、`StreamingQueryListener` が選択肢に戻る |
+| `retentionDurationCheck` を変更できない ([`11`](../src/notebooks/d_table_optimization/11_vacuum_time_travel.ipynb)) | **変更できるはず** | `VACUUM ... RETAIN` が自由に使える |
 
 **この差は、判断の一部を見直す材料になる。**
 
-特に `foreachBatch` が使えるなら、`06` で扱った「自分で書き込む」設計が選べる。
+特に `foreachBatch` が使えるなら、[`06`](../src/notebooks/b_transform_write/06_idempotent_writes.ipynb) で扱った「自分で書き込む」設計が選べる。
 ただし **このモデルでは使う理由が薄い**。
 中核が `replaceWhere` による全置換で、ストリームの中で書き込みを制御する必要がないため。
 
-一方、`14` の `StreamingQueryListener` は本番で価値がある。
+一方、[`14`](../src/notebooks/e_orchestration_monitoring/14_streaming_metrics.ipynb) の `StreamingQueryListener` は本番で価値がある。
 取り込みのメトリクスを継続的に集める手段になる。
 
 ## 11. まだ確かめていないこと
@@ -360,7 +360,7 @@ Bronze に両方残しておけば、後から「2回来ていた」と分かる
 
 - **取り込み方式** … 1章のとおり未確定。ここが決まらないと3章も確定しない
 - **`_metadata.file_modification_time`** … 3章で採用したが、このリポジトリで動かしていない
-- **LDPの REPLACE WHERE フロー** … 構文はドキュメントで確認したが動かしていない (`08`)。
+- **LDPの REPLACE WHERE フロー** … 構文はドキュメントで確認したが動かしていない ([`08`](../src/notebooks/c_declarative_pipelines/08_lakeflow_declarative_pipelines.ipynb))。
   2章の判断を見直す材料になる
 - **`create_auto_cdc_from_snapshot_flow`** … スナップショットの列から SCD Type 2 を作る仕組み。
   容量が問題になったときの選択肢 (12章)
@@ -377,7 +377,7 @@ Bronze に両方残しておけば、後から「2回来ていた」と分かる
 **上流が差分だけをくれるようになったら**
 
 - 4章が根本から変わる。`replaceWhere` は「渡さなかった行が消える」ので使えない
-- `05` の `mergeInto` か、LDPの Auto CDC に切り替える
+- [`05`](../src/notebooks/b_transform_write/05_merge_into.ipynb) の `mergeInto` か、LDPの Auto CDC に切り替える
 - **この変更は基幹側の仕様変更で起きる**。気づかずに `replaceWhere` のままだと、
   差分に含まれない行が静かに消える。7章の検証で件数を見ているのは、ここを拾うためでもある
 
