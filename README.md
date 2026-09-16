@@ -41,6 +41,7 @@ Databricks の streaming / バッチ更新まわりを手を動かして学ぶ�
 
 リンクが付いているものが作成済み。それ以外はこれから作る。
 
+### X. 総括
 各調査を踏まえた全体設計方針は [docs/etl_strategy.md](docs/etl_strategy.md) にまとめる。
 
 ## セットアップ
