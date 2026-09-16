@@ -36,8 +36,8 @@ Databricks の streaming / バッチ更新まわりを手を動かして学ぶ�
 
 ### E. オーケストレーション・監視
 
-- 13. Databricks Workflows / Jobs
-- 14. Structured Streaming のメトリクス監視
+- [13. Workflows / Jobs](src/notebooks/e_orchestration_monitoring/13_workflows_jobs.ipynb) — タスクの依存、リトライ、LDP との使い分け
+- [14. ストリーミングの監視](src/notebooks/e_orchestration_monitoring/14_streaming_metrics.ipynb) — `recentProgress`、未処理量の見方
 
 リンクが付いているものが作成済み。それ以外はこれから作る。
 
