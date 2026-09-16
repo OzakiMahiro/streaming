@@ -1,0 +1,10 @@
+resources:
+  pipelines:
+    auto_cdc_ldp:
+      name: 15_auto_cdc_ldp
+      catalog: tech_survey
+      schema: ldp
+      serverless: true
+      libraries:
+        - glob:
+            include: ../../src/pipelines/15_auto_cdc/transformations/**
